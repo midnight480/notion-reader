@@ -1,0 +1,37 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main  # デプロイをトリガーするブランチ名
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python version
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9  # 使用するPythonのバージョン
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials (JSON形式)
+
+    - name: Deploy to Azure App Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: your-app-name  # Azure App Serviceのアプリ名
+        slot-name: production  # 使用するスロット名（デフォルトは"production"）
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # Azure App Serviceの発行プロファイル
+        package: .  # デプロイするディレクトリ
